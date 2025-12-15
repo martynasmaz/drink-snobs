@@ -116,13 +116,22 @@ const orderPhrases = {
             'drip': ["I'd like a strong drip coffee, please.", "Strong drip coffee for me.", "I need a strong drip coffee."]
         }
     },
-    'espresso': [
-        "An espresso, please.",
-        "I need a shot of espresso.",
-        "One espresso, nice and strong.",
-        "Espresso for me, thanks.",
-        "Just a quick espresso, please."
-    ],
+    'espresso': {
+        single: [
+            "An espresso, please.",
+            "I need a shot of espresso.",
+            "One espresso, nice and strong.",
+            "Espresso for me, thanks.",
+            "Just a quick espresso, please."
+        ],
+        double: [
+            "A double espresso, please.",
+            "I need a double shot.",
+            "One double espresso for me.",
+            "Double espresso, thanks.",
+            "Make it a double espresso, please."
+        ]
+    },
     'green-tea': [
         "I'd love some green tea, please.",
         "Green tea for me.",
@@ -267,6 +276,7 @@ function init() {
     setupEventListeners();
     hideAllControls();
     showRecipe('black-coffee');
+    sorryBtn.style.display = 'none';  // Hide until customer arrives
 }
 
 // Setup all event listeners
@@ -360,7 +370,7 @@ function setupEventListeners() {
     document.querySelectorAll('.water-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const change = parseInt(this.getAttribute('data-change'));
-            currentSettings.waterAmount = Math.max(15, Math.min(60, currentSettings.waterAmount + change));
+            currentSettings.waterAmount = Math.max(15, Math.min(80, currentSettings.waterAmount + change));
             waterValue.textContent = currentSettings.waterAmount;
         });
     });
@@ -369,7 +379,7 @@ function setupEventListeners() {
     document.querySelectorAll('.beans-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const change = parseInt(this.getAttribute('data-change'));
-            currentSettings.beansAmount = Math.max(10, Math.min(25, currentSettings.beansAmount + change));
+            currentSettings.beansAmount = Math.max(10, Math.min(40, currentSettings.beansAmount + change));
             beansValue.textContent = currentSettings.beansAmount;
         });
     });
@@ -434,12 +444,19 @@ function nextCustomer() {
         const randomDrink = drinkKeys[Math.floor(Math.random() * drinkKeys.length)];
         let phrase, requestedStrength = null, requestedMethod = null;
 
+        let isDouble = false;
+
         if (randomDrink === 'black-coffee') {
             const strengths = ['light', 'medium', 'strong'];
             const methods = ['pour-over', 'drip'];
             requestedStrength = strengths[Math.floor(Math.random() * strengths.length)];
             requestedMethod = methods[Math.floor(Math.random() * methods.length)];
             const phrases = orderPhrases[randomDrink][requestedStrength][requestedMethod];
+            phrase = phrases[Math.floor(Math.random() * phrases.length)];
+        } else if (randomDrink === 'espresso') {
+            isDouble = Math.random() < 0.5; // 50% chance of double
+            const size = isDouble ? 'double' : 'single';
+            const phrases = orderPhrases[randomDrink][size];
             phrase = phrases[Math.floor(Math.random() * phrases.length)];
         } else {
             const phrases = orderPhrases[randomDrink];
@@ -449,7 +466,8 @@ function nextCustomer() {
         currentOrder = {
             drink: randomDrink,
             strength: requestedStrength,
-            method: requestedMethod
+            method: requestedMethod,
+            isDouble: isDouble
         };
         isUnavailableOrder = false;
         customerOrderEl.textContent = phrase;
@@ -460,6 +478,7 @@ function nextCustomer() {
     selectedDrink = null;
     suggestionPanel.style.display = 'none';
     reviewArea.style.display = 'none';
+    sorryBtn.style.display = 'inline-block';  // Show sorry button for new customer
     nextCustomerBtn.disabled = true;  // Can't skip - must serve or say sorry
 
     // Clear drink selection
@@ -488,7 +507,6 @@ function showSuggestions() {
             const response = templates[Math.floor(Math.random() * templates.length)]
                 .replace('{drink}', orderedDrink.name.toLowerCase());
 
-            customerOrderEl.textContent = response;
             suggestionPanel.style.display = 'none';
 
             // Furious 1-star review
@@ -496,13 +514,13 @@ function showSuggestions() {
             totalRating += 1;
             ratingDisplay.textContent = (totalRating / reviewCount).toFixed(1);
 
-            reviewStars.textContent = '⭐☆☆☆☆';
-            reviewText.textContent = "LIED to me about having " + orderedDrink.name + "! NEVER going back!";
-            reviewArea.style.display = 'block';
+            // Show review in speech bubble
+            customerOrderEl.textContent = '⭐☆☆☆☆\n' + response + " LIED to me about having " + orderedDrink.name + "! NEVER going back!";
 
             // Reset state
             currentOrder = null;
             selectedDrink = null;
+            sorryBtn.style.display = 'none';  // Hide sorry button when caught lying
             nextCustomerBtn.disabled = false;  // Can get next customer now
             drinkNameEl.textContent = 'Select a drink above';
             liquid.className = 'liquid';
@@ -516,6 +534,7 @@ function showSuggestions() {
 
     // Normal flow for unavailable drinks (or successful lie)
     suggestionPanel.style.display = 'block';
+    sorryBtn.style.display = 'none';  // Hide sorry button when showing suggestions
     customerOrderEl.textContent = "Oh, you don't have that? What do you have then?";
 }
 
@@ -535,7 +554,7 @@ function suggestDrink(drink) {
     } else {
         // Customer rejects and leaves
         const templates = reviewTemplates.suggestionRejected;
-        customerOrderEl.textContent = templates[Math.floor(Math.random() * templates.length)];
+        const response = templates[Math.floor(Math.random() * templates.length)];
         suggestionPanel.style.display = 'none';
 
         // Bad review for not having what they wanted
@@ -543,11 +562,11 @@ function suggestDrink(drink) {
         totalRating += 2;
         ratingDisplay.textContent = (totalRating / reviewCount).toFixed(1);
 
-        reviewStars.textContent = '⭐⭐☆☆☆';
-        reviewText.textContent = "They didn't have what I wanted.";
-        reviewArea.style.display = 'block';
+        // Show review in speech bubble
+        customerOrderEl.textContent = '⭐⭐☆☆☆\n' + response + " They didn't have what I wanted.";
 
         currentOrder = null;
+        sorryBtn.style.display = 'none';  // Hide sorry button when customer leaves
         nextCustomerBtn.disabled = false;  // Can get next customer now
     }
 }
@@ -657,7 +676,7 @@ function resetSettings() {
 function serveDrink() {
     if (!currentOrder || !selectedDrink) return;
 
-    let score, review;
+    let score, review, problems = [];
     const orderedRecipe = recipes[currentOrder.drink];
     const servedRecipe = recipes[selectedDrink];
 
@@ -669,8 +688,10 @@ function serveDrink() {
             .replace('{ordered}', orderedRecipe.name.toLowerCase())
             .replace('{served}', servedRecipe.name.toLowerCase());
     } else {
-        score = calculateScore(orderedRecipe, currentOrder);
-        review = generateReview(score, orderedRecipe);
+        const result = calculateScore(orderedRecipe, currentOrder);
+        score = result.score;
+        problems = result.problems;
+        review = generateReview(score, orderedRecipe, currentOrder, problems);
     }
 
     const stars = Math.round(score);
@@ -682,67 +703,111 @@ function serveDrink() {
     servedCount.textContent = totalServed;
     ratingDisplay.textContent = (totalRating / reviewCount).toFixed(1);
 
-    // Show review
-    reviewStars.textContent = '⭐'.repeat(stars) + '☆'.repeat(5 - stars);
-    reviewText.textContent = review;
-    reviewArea.style.display = 'block';
+    // Show review in speech bubble
+    customerOrderEl.textContent = '⭐'.repeat(stars) + '☆'.repeat(5 - stars) + '\n' + review;
 
     // Reset
     serveBtn.disabled = true;
     currentOrder = null;
     selectedDrink = null;
     nextCustomerBtn.disabled = false;  // Can get next customer now
+    sorryBtn.style.display = 'none';  // Hide sorry button after serving
     drinkNameEl.textContent = 'Select a drink above';
     liquid.className = 'liquid';
     hideAllControls();
     document.querySelectorAll('.drink-btn').forEach(btn => btn.classList.remove('selected'));
 }
 
-// Calculate score
+// Calculate score and identify problems
 function calculateScore(recipe, order) {
     let totalScore = 0;
     let factors = 0;
+    let problems = [];
 
     // Temperature (all drinks)
     const tempDiff = Math.abs(currentSettings.temperature - recipe.ideal.temperature);
-    totalScore += Math.max(0, 5 - (tempDiff / recipe.tolerance.temperature) * 2.5);
+    const tempScore = Math.max(0, 5 - (tempDiff / recipe.tolerance.temperature) * 2.5);
+    totalScore += tempScore;
     factors++;
+    if (tempScore < 4) {
+        if (currentSettings.temperature > recipe.ideal.temperature) {
+            problems.push("Too hot!");
+        } else {
+            problems.push("Too cold!");
+        }
+    }
 
     if (recipe.type === 'tea') {
         const steepDiff = Math.abs(currentSettings.steepTime - recipe.ideal.steepTime);
-        totalScore += Math.max(0, 5 - (steepDiff / recipe.tolerance.steepTime) * 2.5);
+        const steepScore = Math.max(0, 5 - (steepDiff / recipe.tolerance.steepTime) * 2.5);
+        totalScore += steepScore;
         factors++;
+        if (steepScore < 4) {
+            if (currentSettings.steepTime > recipe.ideal.steepTime) {
+                problems.push("Over-steeped!");
+            } else {
+                problems.push("Under-steeped!");
+            }
+        }
     } else if (recipe.type === 'coffee') {
         // Strength
-        totalScore += currentSettings.strength === order.strength ? 5 : 1;
+        const strengthCorrect = currentSettings.strength === order.strength;
+        totalScore += strengthCorrect ? 5 : 1;
         factors++;
+        if (!strengthCorrect) {
+            problems.push(`I wanted ${order.strength} strength, not ${currentSettings.strength}!`);
+        }
         // Method
-        totalScore += currentSettings.method === order.method ? 5 : 2;
+        const methodCorrect = currentSettings.method === order.method;
+        totalScore += methodCorrect ? 5 : 2;
         factors++;
+        if (!methodCorrect) {
+            problems.push(`I asked for ${order.method}, not ${currentSettings.method}!`);
+        }
     } else if (recipe.type === 'espresso') {
         // Pressure
         const pressureDiff = Math.abs(currentSettings.pressure - recipe.ideal.pressure);
-        totalScore += Math.max(0, 5 - (pressureDiff / recipe.tolerance.pressure) * 2.5);
+        const pressureScore = Math.max(0, 5 - (pressureDiff / recipe.tolerance.pressure) * 2.5);
+        totalScore += pressureScore;
         factors++;
+        if (pressureScore < 4) {
+            problems.push(currentSettings.pressure > recipe.ideal.pressure ? "Pressure too high!" : "Pressure too low!");
+        }
         // Extraction time
         const extractDiff = Math.abs(currentSettings.extractionTime - recipe.ideal.extractionTime);
-        totalScore += Math.max(0, 5 - (extractDiff / recipe.tolerance.extractionTime) * 2.5);
+        const extractScore = Math.max(0, 5 - (extractDiff / recipe.tolerance.extractionTime) * 2.5);
+        totalScore += extractScore;
         factors++;
+        if (extractScore < 4) {
+            problems.push(currentSettings.extractionTime > recipe.ideal.extractionTime ? "Over-extracted!" : "Under-extracted!");
+        }
         // Water amount
-        const waterDiff = Math.abs(currentSettings.waterAmount - recipe.ideal.waterAmount);
-        totalScore += Math.max(0, 5 - (waterDiff / recipe.tolerance.waterAmount) * 2.5);
+        const idealWater = order.isDouble ? recipe.ideal.waterAmount * 2 : recipe.ideal.waterAmount;
+        const waterTolerance = order.isDouble ? recipe.tolerance.waterAmount * 2 : recipe.tolerance.waterAmount;
+        const waterDiff = Math.abs(currentSettings.waterAmount - idealWater);
+        const waterScore = Math.max(0, 5 - (waterDiff / waterTolerance) * 2.5);
+        totalScore += waterScore;
         factors++;
+        if (waterScore < 4) {
+            problems.push(currentSettings.waterAmount > idealWater ? "Too much water!" : "Not enough water!");
+        }
         // Beans amount
-        const beansDiff = Math.abs(currentSettings.beansAmount - recipe.ideal.beansAmount);
-        totalScore += Math.max(0, 5 - (beansDiff / recipe.tolerance.beansAmount) * 2.5);
+        const idealBeans = order.isDouble ? recipe.ideal.beansAmount * 2 : recipe.ideal.beansAmount;
+        const beansTolerance = order.isDouble ? recipe.tolerance.beansAmount * 2 : recipe.tolerance.beansAmount;
+        const beansDiff = Math.abs(currentSettings.beansAmount - idealBeans);
+        const beansScore = Math.max(0, 5 - (beansDiff / beansTolerance) * 2.5);
+        totalScore += beansScore;
         factors++;
+        if (beansScore < 4) {
+            problems.push(currentSettings.beansAmount > idealBeans ? "Too much coffee!" : "Not enough coffee!");
+        }
     }
 
-    return totalScore / factors;
+    return { score: totalScore / factors, problems };
 }
 
-// Generate review
-function generateReview(score, recipe) {
+// Generate review with specific feedback
+function generateReview(score, recipe, order, problems) {
     let templates;
     if (score >= 4.5) templates = reviewTemplates.perfect;
     else if (score >= 3.5) templates = reviewTemplates.good;
@@ -750,8 +815,15 @@ function generateReview(score, recipe) {
     else if (score >= 1.5) templates = reviewTemplates.bad;
     else templates = reviewTemplates.terrible;
 
-    return templates[Math.floor(Math.random() * templates.length)]
+    let review = templates[Math.floor(Math.random() * templates.length)]
         .replace('{drink}', recipe.name.toLowerCase());
+
+    // Add specific feedback about what was wrong
+    if (problems.length > 0 && score < 4.5) {
+        review += ' ' + problems.join(' ');
+    }
+
+    return review;
 }
 
 // Show recipe in modal
