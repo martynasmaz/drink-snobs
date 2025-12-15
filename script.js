@@ -3,7 +3,7 @@ const recipes = {
     'black-coffee': {
         name: 'Black Coffee',
         type: 'coffee',
-        description: 'A classic brewed coffee made by pouring hot water over ground coffee beans. Best enjoyed with a medium roast for balanced flavor.',
+        description: 'A classic brewed coffee made by pouring hot water over ground coffee beans. Customers may request light, medium, or strong brew.',
         ideal: {
             temperature: 96,  // °C - just off boiling
             strength: 'medium'
@@ -11,10 +11,10 @@ const recipes = {
         tolerance: {
             temperature: 4  // ±4°C acceptable
         },
-        tips: 'Water should be between 92-96°C (just off the boil). Too hot and it becomes bitter, too cool and it tastes weak.',
+        tips: 'Water should be between 92-96°C (just off the boil). Listen carefully to the customer - they will specify if they want light, medium, or strong!',
         specs: [
             { label: 'Water Temperature', value: '92-96°C (ideal: 96°C)' },
-            { label: 'Brew Strength', value: 'Medium' },
+            { label: 'Brew Strength', value: 'As requested by customer!' },
             { label: 'Brewing Method', value: 'Pour-over or drip' }
         ]
     },
@@ -81,13 +81,28 @@ const recipes = {
 const customerAvatars = ['🧑', '👩', '👨', '🧔', '👵', '👴', '👩‍🦰', '👨‍🦱', '👩‍🦳', '🧑‍🦲'];
 
 const orderPhrases = {
-    'black-coffee': [
-        "I'd like a black coffee, please.",
-        "One black coffee for me.",
-        "Could I get a simple black coffee?",
-        "Just a regular black coffee, thanks.",
-        "Black coffee, nothing fancy."
-    ],
+    'black-coffee': {
+        'light': [
+            "I'd like a light black coffee, please.",
+            "One light black coffee for me.",
+            "Could I get a light roast black coffee?",
+            "Black coffee, light strength please."
+        ],
+        'medium': [
+            "I'd like a black coffee, please.",
+            "One black coffee for me.",
+            "Could I get a simple black coffee?",
+            "Just a regular black coffee, thanks.",
+            "Black coffee, medium strength."
+        ],
+        'strong': [
+            "I'd like a strong black coffee, please.",
+            "One strong black coffee for me.",
+            "Could I get a bold black coffee?",
+            "Black coffee, make it strong please.",
+            "I need a strong black coffee to wake up."
+        ]
+    },
     'espresso': [
         "An espresso, please.",
         "I need a shot of espresso.",
@@ -147,11 +162,19 @@ const reviewTemplates = {
         "Did you even try? This is undrinkable!",
         "This is the worst {drink} I've ever had!",
         "I'm leaving a bad review. This is terrible."
+    ],
+    wrongDrink: [
+        "Um... I ordered {ordered}, not {served}.",
+        "This isn't what I asked for at all!",
+        "I wanted {ordered}. This is {served}.",
+        "Did you even listen to my order? I said {ordered}!",
+        "Wrong drink! I asked for {ordered}."
     ]
 };
 
 // Game state
-let currentOrder = null;
+let currentOrder = null;  // { drink: 'black-coffee', strength: 'medium' }
+let selectedDrink = null; // What the player chose to make
 let currentSettings = {
     temperature: 70,
     steepTime: 3,
@@ -269,6 +292,34 @@ function setupEventListeners() {
 
     // Cool button
     coolBtn.addEventListener('click', startCooling);
+
+    // Drink selection buttons
+    document.querySelectorAll('.drink-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => selectDrink(e.target.dataset.drink));
+    });
+}
+
+// Select drink to make
+function selectDrink(drink) {
+    if (!currentOrder) return; // No customer yet
+
+    selectedDrink = drink;
+
+    // Update button states
+    document.querySelectorAll('.drink-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.drink === drink);
+    });
+
+    // Update cup display
+    updateCupDisplay(drink);
+    drinkName.textContent = recipes[drink].name;
+
+    // Show appropriate controls for selected drink type
+    const drinkType = recipes[drink].type;
+    updateControlVisibility(drinkType);
+
+    // Enable serve button
+    serveBtn.disabled = false;
 }
 
 // Start cooling process
@@ -304,20 +355,46 @@ function startCooling() {
 function nextCustomer() {
     const drinkKeys = Object.keys(recipes);
     const randomDrink = drinkKeys[Math.floor(Math.random() * drinkKeys.length)];
-    const randomPhrase = orderPhrases[randomDrink][Math.floor(Math.random() * orderPhrases[randomDrink].length)];
     const randomAvatar = customerAvatars[Math.floor(Math.random() * customerAvatars.length)];
 
-    currentOrder = randomDrink;
+    // Determine the order phrase and strength requirement
+    let randomPhrase;
+    let requestedStrength = null;
+
+    if (randomDrink === 'black-coffee') {
+        // Coffee has strength options
+        const strengths = ['light', 'medium', 'strong'];
+        requestedStrength = strengths[Math.floor(Math.random() * strengths.length)];
+        const phrases = orderPhrases[randomDrink][requestedStrength];
+        randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+    } else {
+        // Other drinks don't have strength
+        const phrases = orderPhrases[randomDrink];
+        randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+    }
+
+    // Store the full order
+    currentOrder = {
+        drink: randomDrink,
+        strength: requestedStrength
+    };
+    selectedDrink = null;
+
     customerOrder.textContent = randomPhrase;
     customerAvatar.textContent = randomAvatar;
 
-    // Update UI
-    updateControlVisibility(recipes[randomDrink].type);
-    updateCupDisplay(randomDrink);
-    drinkName.textContent = recipes[randomDrink].name;
-    serveBtn.disabled = false;
+    // Reset UI - cup starts empty, no controls shown
+    updateControlVisibility(null);
+    updateCupDisplay(null);
+    drinkName.textContent = 'Select a drink above';
+    serveBtn.disabled = true;
     reviewArea.style.display = 'none';
     nextCustomerBtn.textContent = 'Skip Customer';
+
+    // Clear drink button selection
+    document.querySelectorAll('.drink-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
 
     // Reset settings to defaults
     resetSettings();
@@ -369,12 +446,27 @@ function updateCupDisplay(drink) {
 
 // Serve drink and calculate score
 function serveDrink() {
-    if (!currentOrder) return;
+    if (!currentOrder || !selectedDrink) return;
 
-    const recipe = recipes[currentOrder];
-    const score = calculateScore(recipe);
+    let score;
+    let review;
+    const orderedRecipe = recipes[currentOrder.drink];
+    const servedRecipe = recipes[selectedDrink];
+
+    // Check if wrong drink was served
+    if (selectedDrink !== currentOrder.drink) {
+        score = 1;
+        const templates = reviewTemplates.wrongDrink;
+        review = templates[Math.floor(Math.random() * templates.length)]
+            .replace('{ordered}', orderedRecipe.name.toLowerCase())
+            .replace('{served}', servedRecipe.name.toLowerCase());
+    } else {
+        // Correct drink - calculate score based on parameters
+        score = calculateScore(orderedRecipe, currentOrder.strength);
+        review = generateReview(score, orderedRecipe);
+    }
+
     const stars = Math.round(score);
-    const review = generateReview(score, recipe);
 
     // Update stats
     totalServed++;
@@ -391,14 +483,20 @@ function serveDrink() {
     // Reset for next customer
     serveBtn.disabled = true;
     currentOrder = null;
+    selectedDrink = null;
     nextCustomerBtn.textContent = 'Next Customer';
-    drinkName.textContent = '-';
+    drinkName.textContent = 'Select a drink above';
     liquid.className = 'liquid';
     updateControlVisibility(null);
+
+    // Clear drink button selection
+    document.querySelectorAll('.drink-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
 }
 
 // Calculate score based on how close to ideal parameters
-function calculateScore(recipe) {
+function calculateScore(recipe, requestedStrength) {
     let totalScore = 0;
     let factors = 0;
 
@@ -415,8 +513,9 @@ function calculateScore(recipe) {
         totalScore += steepScore;
         factors++;
     } else if (recipe.type === 'coffee') {
-        const strengthScore = currentSettings.strength === recipe.ideal.strength ? 5 :
-                             (currentSettings.strength === 'medium' ? 3 : 2);
+        // For coffee, use the customer's requested strength
+        const targetStrength = requestedStrength || 'medium';
+        const strengthScore = currentSettings.strength === targetStrength ? 5 : 1;
         totalScore += strengthScore;
         factors++;
     } else if (recipe.type === 'espresso') {
