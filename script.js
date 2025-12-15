@@ -460,8 +460,7 @@ function nextCustomer() {
     selectedDrink = null;
     suggestionPanel.style.display = 'none';
     reviewArea.style.display = 'none';
-    nextCustomerBtn.textContent = 'Skip Customer';
-    sorryBtn.style.display = 'inline-block';  // Always show - player can lie or legitimately not have it
+    nextCustomerBtn.disabled = true;  // Can't skip - must serve or say sorry
 
     // Clear drink selection
     document.querySelectorAll('.drink-btn').forEach(btn => btn.classList.remove('selected'));
@@ -476,15 +475,17 @@ function nextCustomer() {
 
 // Show suggestions panel for unavailable drinks
 function showSuggestions() {
+    // Check if there's no current order
+    if (!currentOrder) return;
+
     // Check if player is LYING - the drink IS actually available!
-    if (!isUnavailableOrder && currentOrder && currentOrder.drink) {
+    if (!isUnavailableOrder && currentOrder.drink) {
         const orderedDrink = recipes[currentOrder.drink];
         const templates = reviewTemplates.furious;
         const response = templates[Math.floor(Math.random() * templates.length)]
             .replace('{drink}', orderedDrink.name.toLowerCase());
 
         customerOrderEl.textContent = response;
-        sorryBtn.style.display = 'none';
         suggestionPanel.style.display = 'none';
 
         // Furious 1-star review
@@ -499,7 +500,7 @@ function showSuggestions() {
         // Reset state
         currentOrder = null;
         selectedDrink = null;
-        nextCustomerBtn.textContent = 'Next Customer';
+        nextCustomerBtn.disabled = false;  // Can get next customer now
         drinkNameEl.textContent = 'Select a drink above';
         liquid.className = 'liquid';
         hideAllControls();
@@ -509,7 +510,6 @@ function showSuggestions() {
 
     // Normal flow for actually unavailable drinks
     suggestionPanel.style.display = 'block';
-    sorryBtn.style.display = 'none';
     customerOrderEl.textContent = "Oh, you don't have that? What do you have then?";
 }
 
@@ -542,7 +542,7 @@ function suggestDrink(drink) {
         reviewArea.style.display = 'block';
 
         currentOrder = null;
-        nextCustomerBtn.textContent = 'Next Customer';
+        nextCustomerBtn.disabled = false;  // Can get next customer now
     }
 }
 
@@ -685,7 +685,7 @@ function serveDrink() {
     serveBtn.disabled = true;
     currentOrder = null;
     selectedDrink = null;
-    nextCustomerBtn.textContent = 'Next Customer';
+    nextCustomerBtn.disabled = false;  // Can get next customer now
     drinkNameEl.textContent = 'Select a drink above';
     liquid.className = 'liquid';
     hideAllControls();
