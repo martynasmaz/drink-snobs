@@ -21,12 +21,26 @@
             <!-- Customer Area -->
             <section class="customer-area">
                 <div class="customer" id="customer">
-                    <div class="customer-avatar">🧑</div>
+                    <div class="customer-avatar" id="customer-avatar">🧑</div>
                     <div class="speech-bubble" id="speech-bubble">
                         <p id="customer-order">Welcome to your first day! Click "Next Customer" to start.</p>
                     </div>
                 </div>
-                <button class="next-btn" id="next-customer-btn">Next Customer</button>
+                <div class="customer-actions">
+                    <button class="next-btn" id="next-customer-btn">Next Customer</button>
+                    <button class="sorry-btn" id="sorry-btn" style="display: none;">Sorry, we don't have that...</button>
+                </div>
+            </section>
+
+            <!-- Suggestion Panel (for unavailable drinks) -->
+            <section class="suggestion-panel" id="suggestion-panel" style="display: none;">
+                <h3>Suggest an alternative:</h3>
+                <div class="suggestion-buttons">
+                    <button class="suggest-btn" data-drink="black-coffee">☕ Black Coffee</button>
+                    <button class="suggest-btn" data-drink="espresso">☕ Espresso</button>
+                    <button class="suggest-btn" data-drink="green-tea">🍵 Green Tea</button>
+                    <button class="suggest-btn" data-drink="black-tea">🍵 Black Tea</button>
+                </div>
             </section>
 
             <!-- Preparation Station -->
@@ -36,7 +50,7 @@
                 <!-- Drink Selection -->
                 <div class="drink-selection">
                     <label>Select Drink to Make:</label>
-                    <div class="drink-buttons">
+                    <div class="drink-buttons" id="drink-buttons">
                         <button class="drink-btn" data-drink="black-coffee">☕ Black Coffee</button>
                         <button class="drink-btn" data-drink="espresso">☕ Espresso</button>
                         <button class="drink-btn" data-drink="green-tea">🍵 Green Tea</button>
@@ -53,47 +67,55 @@
 
                 <div class="controls">
                     <!-- Temperature Control -->
-                    <div class="control-group">
-                        <label>Temperature</label>
+                    <div class="control-group" id="temp-control">
+                        <label>Water Temperature</label>
                         <div class="temp-display">
                             <span id="temp-value">70</span>°C
                         </div>
                         <div class="button-row">
-                            <button class="control-btn" data-temp="-10">-10</button>
-                            <button class="control-btn" data-temp="-5">-5</button>
-                            <button class="control-btn" data-temp="+5">+5</button>
-                            <button class="control-btn" data-temp="+10">+10</button>
+                            <button class="control-btn temp-btn" data-change="-10">-10</button>
+                            <button class="control-btn temp-btn" data-change="-5">-5</button>
+                            <button class="control-btn temp-btn" data-change="+5">+5</button>
+                            <button class="control-btn temp-btn" data-change="+10">+10</button>
                         </div>
                         <div class="temp-presets">
-                            <button class="preset-btn" data-temp="70">70°C</button>
-                            <button class="preset-btn" data-temp="80">80°C</button>
-                            <button class="preset-btn" data-temp="90">90°C</button>
-                            <button class="preset-btn" data-temp="96">96°C</button>
+                            <button class="preset-btn temp-preset" data-value="75">75°C</button>
+                            <button class="preset-btn temp-preset" data-value="85">85°C</button>
+                            <button class="preset-btn temp-preset" data-value="93">93°C</button>
+                            <button class="preset-btn temp-preset" data-value="96">96°C</button>
                         </div>
                         <div class="cool-down-row">
-                            <button class="cool-btn" id="cool-btn">
-                                <span class="cool-text">Let it cool (-1°C)</span>
-                                <span class="cool-timer" id="cool-timer"></span>
-                            </button>
+                            <button class="cool-btn" id="cool-btn">Let it cool (-1°C)</button>
+                            <span class="cool-timer" id="cool-timer"></span>
                         </div>
                     </div>
 
                     <!-- Steep Time Control (for tea) -->
-                    <div class="control-group" id="steep-control">
+                    <div class="control-group hidden" id="steep-control">
                         <label>Steep Time</label>
                         <div class="steep-display">
                             <span id="steep-value">3</span> min
                         </div>
                         <div class="button-row">
-                            <button class="control-btn" data-steep="-1">-1</button>
-                            <button class="control-btn" data-steep="-0.5">-0.5</button>
-                            <button class="control-btn" data-steep="+0.5">+0.5</button>
-                            <button class="control-btn" data-steep="+1">+1</button>
+                            <button class="control-btn steep-btn" data-change="-1">-1</button>
+                            <button class="control-btn steep-btn" data-change="-0.5">-0.5</button>
+                            <button class="control-btn steep-btn" data-change="+0.5">+0.5</button>
+                            <button class="control-btn steep-btn" data-change="+1">+1</button>
                         </div>
                     </div>
 
-                    <!-- Brew Strength (for coffee) -->
-                    <div class="control-group" id="strength-control">
+                    <!-- Brew Method (for black coffee) -->
+                    <div class="control-group hidden" id="method-control">
+                        <label>Brewing Method</label>
+                        <div class="method-display" id="method-value">Pour-over</div>
+                        <div class="button-row">
+                            <button class="method-btn active" data-method="pour-over">Pour-over</button>
+                            <button class="method-btn" data-method="drip">Drip</button>
+                        </div>
+                    </div>
+
+                    <!-- Brew Strength (for black coffee) -->
+                    <div class="control-group hidden" id="strength-control">
                         <label>Brew Strength</label>
                         <div class="strength-display" id="strength-value">Medium</div>
                         <div class="button-row">
@@ -103,15 +125,50 @@
                         </div>
                     </div>
 
-                    <!-- Pressure (for espresso) -->
-                    <div class="control-group" id="pressure-control">
+                    <!-- Espresso Controls -->
+                    <div class="control-group hidden" id="pressure-control">
                         <label>Pressure</label>
                         <div class="pressure-display">
                             <span id="pressure-value">9</span> bars
                         </div>
                         <div class="button-row">
-                            <button class="control-btn" data-pressure="-1">-1</button>
-                            <button class="control-btn" data-pressure="+1">+1</button>
+                            <button class="control-btn pressure-btn" data-change="-1">-1</button>
+                            <button class="control-btn pressure-btn" data-change="+1">+1</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group hidden" id="extraction-control">
+                        <label>Extraction Time</label>
+                        <div class="extraction-display">
+                            <span id="extraction-value">25</span> sec
+                        </div>
+                        <div class="button-row">
+                            <button class="control-btn extraction-btn" data-change="-5">-5</button>
+                            <button class="control-btn extraction-btn" data-change="-1">-1</button>
+                            <button class="control-btn extraction-btn" data-change="+1">+1</button>
+                            <button class="control-btn extraction-btn" data-change="+5">+5</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group hidden" id="water-control">
+                        <label>Water Amount</label>
+                        <div class="water-display">
+                            <span id="water-value">30</span> ml
+                        </div>
+                        <div class="button-row">
+                            <button class="control-btn water-btn" data-change="-5">-5</button>
+                            <button class="control-btn water-btn" data-change="+5">+5</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group hidden" id="beans-control">
+                        <label>Coffee Grounds</label>
+                        <div class="beans-display">
+                            <span id="beans-value">18</span> g
+                        </div>
+                        <div class="button-row">
+                            <button class="control-btn beans-btn" data-change="-1">-1</button>
+                            <button class="control-btn beans-btn" data-change="+1">+1</button>
                         </div>
                     </div>
                 </div>

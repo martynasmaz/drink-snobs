@@ -121,6 +121,13 @@ main {
     line-height: 1.5;
 }
 
+.customer-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
 .next-btn {
     padding: 12px 30px;
     background: #2e7d32;
@@ -134,6 +141,58 @@ main {
 
 .next-btn:hover {
     background: #388e3c;
+}
+
+.sorry-btn {
+    padding: 12px 30px;
+    background: #e65100;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sorry-btn:hover {
+    background: #ff6d00;
+}
+
+/* Suggestion Panel */
+.suggestion-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.suggestion-panel h3 {
+    color: #2c1810;
+    margin-bottom: 15px;
+}
+
+.suggestion-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.suggest-btn {
+    padding: 12px 20px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggest-btn:hover {
+    background: #1565c0;
+    transform: translateY(-2px);
 }
 
 /* Preparation Station */
@@ -194,12 +253,6 @@ main {
     background: #8b4513;
     color: white;
     border-color: #5c2d0e;
-}
-
-.drink-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
 }
 
 .drink-display {
@@ -279,6 +332,10 @@ main {
     border-radius: 10px;
 }
 
+.control-group.hidden {
+    display: none;
+}
+
 .control-group label {
     display: block;
     font-weight: 600;
@@ -287,7 +344,8 @@ main {
     font-size: 1.1rem;
 }
 
-.temp-display, .steep-display, .pressure-display {
+.temp-display, .steep-display, .pressure-display,
+.extraction-display, .water-display, .beans-display {
     font-size: 2rem;
     font-weight: bold;
     color: #8b4513;
@@ -295,7 +353,7 @@ main {
     text-align: center;
 }
 
-.strength-display {
+.method-display, .strength-display {
     font-size: 1.5rem;
     font-weight: bold;
     color: #8b4513;
@@ -353,6 +411,8 @@ main {
     margin-top: 15px;
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
 
 .cool-btn {
@@ -364,9 +424,6 @@ main {
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 10px;
 }
 
 .cool-btn:hover:not(:disabled) {
@@ -386,18 +443,12 @@ main {
 
 .cool-timer {
     font-weight: bold;
-    min-width: 45px;
+    font-size: 1.2rem;
+    color: #e67e22;
+    min-width: 30px;
 }
 
-.cool-text {
-    display: inline;
-}
-
-.cool-btn.cooling .cool-text {
-    display: none;
-}
-
-.strength-btn {
+.method-btn, .strength-btn {
     padding: 10px 20px;
     background: #d2b48c;
     color: #2c1810;
@@ -408,11 +459,11 @@ main {
     transition: all 0.2s ease;
 }
 
-.strength-btn:hover {
+.method-btn:hover, .strength-btn:hover {
     background: #c4a67c;
 }
 
-.strength-btn.active {
+.method-btn.active, .strength-btn.active {
     background: #8b4513;
     color: white;
     border-color: #5c2d0e;
@@ -591,11 +642,6 @@ main {
     color: #8b4513;
 }
 
-/* Hidden controls */
-.control-group.hidden {
-    display: none;
-}
-
 /* Responsive */
 @media (max-width: 600px) {
     header {
@@ -620,6 +666,11 @@ main {
 
     .control-btn, .preset-btn {
         padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
+    .drink-btn, .suggest-btn {
+        padding: 10px 15px;
         font-size: 0.9rem;
     }
 }
