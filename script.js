@@ -188,6 +188,14 @@ const reviewTemplates = {
         "Never mind then.",
         "That's not what I wanted. Bye.",
         "I'll pass. Thanks anyway."
+    ],
+    furious: [
+        "WHAT?! I can literally SEE the {drink} right there! Are you kidding me?!",
+        "You DON'T have {drink}?! It's ON YOUR DAMN MENU! What kind of scam is this?!",
+        "Excuse me?! I just watched you make {drink} for the last customer! This is BS!",
+        "Are you BLIND?! The {drink} is RIGHT THERE! I'm never coming back here!",
+        "You're lying to my face! I can smell the {drink} brewing! Unbelievable!",
+        "What the hell?! You clearly have {drink}! This is the worst service I've ever had!"
     ]
 };
 
@@ -419,8 +427,6 @@ function nextCustomer() {
         currentOrder = { unavailable: unavailable.name };
         isUnavailableOrder = true;
         customerOrderEl.textContent = phrase;
-
-        sorryBtn.style.display = 'inline-block';
         serveBtn.disabled = true;
     } else {
         // Available drink
@@ -447,7 +453,6 @@ function nextCustomer() {
         };
         isUnavailableOrder = false;
         customerOrderEl.textContent = phrase;
-        sorryBtn.style.display = 'none';
     }
 
     // Reset UI
@@ -456,6 +461,7 @@ function nextCustomer() {
     suggestionPanel.style.display = 'none';
     reviewArea.style.display = 'none';
     nextCustomerBtn.textContent = 'Skip Customer';
+    sorryBtn.style.display = 'inline-block';  // Always show - player can lie or legitimately not have it
 
     // Clear drink selection
     document.querySelectorAll('.drink-btn').forEach(btn => btn.classList.remove('selected'));
@@ -470,6 +476,38 @@ function nextCustomer() {
 
 // Show suggestions panel for unavailable drinks
 function showSuggestions() {
+    // Check if player is LYING - the drink IS actually available!
+    if (!isUnavailableOrder && currentOrder && currentOrder.drink) {
+        const orderedDrink = recipes[currentOrder.drink];
+        const templates = reviewTemplates.furious;
+        const response = templates[Math.floor(Math.random() * templates.length)]
+            .replace('{drink}', orderedDrink.name.toLowerCase());
+
+        customerOrderEl.textContent = response;
+        sorryBtn.style.display = 'none';
+        suggestionPanel.style.display = 'none';
+
+        // Furious 1-star review
+        reviewCount++;
+        totalRating += 1;
+        ratingDisplay.textContent = (totalRating / reviewCount).toFixed(1);
+
+        reviewStars.textContent = '⭐☆☆☆☆';
+        reviewText.textContent = "LIED to me about having " + orderedDrink.name + "! NEVER going back!";
+        reviewArea.style.display = 'block';
+
+        // Reset state
+        currentOrder = null;
+        selectedDrink = null;
+        nextCustomerBtn.textContent = 'Next Customer';
+        drinkNameEl.textContent = 'Select a drink above';
+        liquid.className = 'liquid';
+        hideAllControls();
+        document.querySelectorAll('.drink-btn').forEach(btn => btn.classList.remove('selected'));
+        return;
+    }
+
+    // Normal flow for actually unavailable drinks
     suggestionPanel.style.display = 'block';
     sorryBtn.style.display = 'none';
     customerOrderEl.textContent = "Oh, you don't have that? What do you have then?";
