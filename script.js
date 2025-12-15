@@ -480,35 +480,41 @@ function showSuggestions() {
 
     // Check if player is LYING - the drink IS actually available!
     if (!isUnavailableOrder && currentOrder.drink) {
-        const orderedDrink = recipes[currentOrder.drink];
-        const templates = reviewTemplates.furious;
-        const response = templates[Math.floor(Math.random() * templates.length)]
-            .replace('{drink}', orderedDrink.name.toLowerCase());
+        // 30% chance customer catches the lie
+        if (Math.random() < 0.3) {
+            // CAUGHT! Furious response
+            const orderedDrink = recipes[currentOrder.drink];
+            const templates = reviewTemplates.furious;
+            const response = templates[Math.floor(Math.random() * templates.length)]
+                .replace('{drink}', orderedDrink.name.toLowerCase());
 
-        customerOrderEl.textContent = response;
-        suggestionPanel.style.display = 'none';
+            customerOrderEl.textContent = response;
+            suggestionPanel.style.display = 'none';
 
-        // Furious 1-star review
-        reviewCount++;
-        totalRating += 1;
-        ratingDisplay.textContent = (totalRating / reviewCount).toFixed(1);
+            // Furious 1-star review
+            reviewCount++;
+            totalRating += 1;
+            ratingDisplay.textContent = (totalRating / reviewCount).toFixed(1);
 
-        reviewStars.textContent = '⭐☆☆☆☆';
-        reviewText.textContent = "LIED to me about having " + orderedDrink.name + "! NEVER going back!";
-        reviewArea.style.display = 'block';
+            reviewStars.textContent = '⭐☆☆☆☆';
+            reviewText.textContent = "LIED to me about having " + orderedDrink.name + "! NEVER going back!";
+            reviewArea.style.display = 'block';
 
-        // Reset state
-        currentOrder = null;
-        selectedDrink = null;
-        nextCustomerBtn.disabled = false;  // Can get next customer now
-        drinkNameEl.textContent = 'Select a drink above';
-        liquid.className = 'liquid';
-        hideAllControls();
-        document.querySelectorAll('.drink-btn').forEach(btn => btn.classList.remove('selected'));
-        return;
+            // Reset state
+            currentOrder = null;
+            selectedDrink = null;
+            nextCustomerBtn.disabled = false;  // Can get next customer now
+            drinkNameEl.textContent = 'Select a drink above';
+            liquid.className = 'liquid';
+            hideAllControls();
+            document.querySelectorAll('.drink-btn').forEach(btn => btn.classList.remove('selected'));
+            return;
+        }
+        // 70% chance: Customer believes the lie - treat as unavailable
+        isUnavailableOrder = true;
     }
 
-    // Normal flow for actually unavailable drinks
+    // Normal flow for unavailable drinks (or successful lie)
     suggestionPanel.style.display = 'block';
     customerOrderEl.textContent = "Oh, you don't have that? What do you have then?";
 }
