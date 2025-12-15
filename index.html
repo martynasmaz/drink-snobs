@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drink Snobs - Coffee & Tea Shop</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>Drink Snobs</h1>
+            <div class="header-stats">
+                <span class="rating">Rating: <span id="rating">5.0</span> ⭐</span>
+                <span class="served">Served: <span id="served-count">0</span></span>
+                <button class="book-btn" id="book-btn">📖 Recipe Book</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Customer Area -->
+            <section class="customer-area">
+                <div class="customer" id="customer">
+                    <div class="customer-avatar">🧑</div>
+                    <div class="speech-bubble" id="speech-bubble">
+                        <p id="customer-order">Welcome to your first day! Click "Next Customer" to start.</p>
+                    </div>
+                </div>
+                <button class="next-btn" id="next-customer-btn">Next Customer</button>
+            </section>
+
+            <!-- Preparation Station -->
+            <section class="prep-station" id="prep-station">
+                <h2>Preparation Station</h2>
+
+                <div class="drink-display">
+                    <div class="cup" id="cup">
+                        <div class="liquid" id="liquid"></div>
+                    </div>
+                    <p class="drink-name" id="drink-name">-</p>
+                </div>
+
+                <div class="controls">
+                    <!-- Temperature Control -->
+                    <div class="control-group">
+                        <label>Temperature</label>
+                        <div class="temp-display">
+                            <span id="temp-value">70</span>°C
+                        </div>
+                        <div class="button-row">
+                            <button class="control-btn" data-temp="-10">-10</button>
+                            <button class="control-btn" data-temp="-5">-5</button>
+                            <button class="control-btn" data-temp="+5">+5</button>
+                            <button class="control-btn" data-temp="+10">+10</button>
+                        </div>
+                        <div class="temp-presets">
+                            <button class="preset-btn" data-temp="70">70°C</button>
+                            <button class="preset-btn" data-temp="80">80°C</button>
+                            <button class="preset-btn" data-temp="90">90°C</button>
+                            <button class="preset-btn" data-temp="96">96°C</button>
+                        </div>
+                    </div>
+
+                    <!-- Steep Time Control (for tea) -->
+                    <div class="control-group" id="steep-control">
+                        <label>Steep Time</label>
+                        <div class="steep-display">
+                            <span id="steep-value">3</span> min
+                        </div>
+                        <div class="button-row">
+                            <button class="control-btn" data-steep="-1">-1</button>
+                            <button class="control-btn" data-steep="-0.5">-0.5</button>
+                            <button class="control-btn" data-steep="+0.5">+0.5</button>
+                            <button class="control-btn" data-steep="+1">+1</button>
+                        </div>
+                    </div>
+
+                    <!-- Brew Strength (for coffee) -->
+                    <div class="control-group" id="strength-control">
+                        <label>Brew Strength</label>
+                        <div class="strength-display" id="strength-value">Medium</div>
+                        <div class="button-row">
+                            <button class="strength-btn" data-strength="light">Light</button>
+                            <button class="strength-btn active" data-strength="medium">Medium</button>
+                            <button class="strength-btn" data-strength="strong">Strong</button>
+                        </div>
+                    </div>
+
+                    <!-- Pressure (for espresso) -->
+                    <div class="control-group" id="pressure-control">
+                        <label>Pressure</label>
+                        <div class="pressure-display">
+                            <span id="pressure-value">9</span> bars
+                        </div>
+                        <div class="button-row">
+                            <button class="control-btn" data-pressure="-1">-1</button>
+                            <button class="control-btn" data-pressure="+1">+1</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="serve-btn" id="serve-btn" disabled>Serve Drink</button>
+            </section>
+
+            <!-- Review Display -->
+            <section class="review-area" id="review-area" style="display: none;">
+                <div class="review-card">
+                    <div class="review-stars" id="review-stars">⭐⭐⭐⭐⭐</div>
+                    <p class="review-text" id="review-text"></p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Recipe Book Modal -->
+        <div class="modal" id="recipe-modal">
+            <div class="modal-content">
+                <button class="close-btn" id="close-modal">&times;</button>
+                <h2>📖 Recipe Book</h2>
+
+                <div class="recipe-tabs">
+                    <button class="recipe-tab active" data-drink="black-coffee">Black Coffee</button>
+                    <button class="recipe-tab" data-drink="espresso">Espresso</button>
+                    <button class="recipe-tab" data-drink="green-tea">Green Tea</button>
+                    <button class="recipe-tab" data-drink="black-tea">Black Tea</button>
+                </div>
+
+                <div class="recipe-content" id="recipe-content">
+                    <!-- Content populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
