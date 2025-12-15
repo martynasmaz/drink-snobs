@@ -161,6 +161,8 @@ let currentSettings = {
 let totalServed = 0;
 let totalRating = 0;
 let reviewCount = 0;
+let coolingInterval = null;
+const COOL_DOWN_SECONDS = 5; // Time to wait for 1°C drop
 
 // DOM elements
 const customerOrder = document.getElementById('customer-order');
@@ -191,6 +193,10 @@ const bookBtn = document.getElementById('book-btn');
 const closeModal = document.getElementById('close-modal');
 const recipeContent = document.getElementById('recipe-content');
 const recipeTabs = document.querySelectorAll('.recipe-tab');
+
+// Cool button elements
+const coolBtn = document.getElementById('cool-btn');
+const coolTimer = document.getElementById('cool-timer');
 
 // Initialize
 function init() {
@@ -260,6 +266,38 @@ function setupEventListeners() {
             showRecipe(tab.dataset.drink);
         });
     });
+
+    // Cool button
+    coolBtn.addEventListener('click', startCooling);
+}
+
+// Start cooling process
+function startCooling() {
+    if (coolingInterval || currentSettings.temperature <= 60) return;
+
+    coolBtn.disabled = true;
+    coolBtn.classList.add('cooling');
+    let secondsLeft = COOL_DOWN_SECONDS;
+    coolTimer.textContent = `${secondsLeft}s`;
+
+    coolingInterval = setInterval(() => {
+        secondsLeft--;
+        coolTimer.textContent = `${secondsLeft}s`;
+
+        if (secondsLeft <= 0) {
+            clearInterval(coolingInterval);
+            coolingInterval = null;
+
+            // Drop temperature by 1 degree
+            currentSettings.temperature = Math.max(60, currentSettings.temperature - 1);
+            tempValue.textContent = currentSettings.temperature;
+
+            // Reset button
+            coolBtn.disabled = false;
+            coolBtn.classList.remove('cooling');
+            coolTimer.textContent = '';
+        }
+    }, 1000);
 }
 
 // Next customer
@@ -287,6 +325,15 @@ function nextCustomer() {
 
 // Reset settings to reasonable defaults
 function resetSettings() {
+    // Cancel any cooling in progress
+    if (coolingInterval) {
+        clearInterval(coolingInterval);
+        coolingInterval = null;
+        coolBtn.disabled = false;
+        coolBtn.classList.remove('cooling');
+        coolTimer.textContent = '';
+    }
+
     currentSettings.temperature = 70;
     currentSettings.steepTime = 3;
     currentSettings.strength = 'medium';
