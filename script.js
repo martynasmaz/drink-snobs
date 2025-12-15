@@ -238,6 +238,8 @@ const serveBtn = document.getElementById('serve-btn');
 const reviewArea = document.getElementById('review-area');
 const reviewStars = document.getElementById('review-stars');
 const reviewText = document.getElementById('review-text');
+const reviewBubble = document.getElementById('review-bubble');
+const customerReview = document.getElementById('customer-review');
 const ratingDisplay = document.getElementById('rating');
 const servedCount = document.getElementById('served-count');
 const liquid = document.getElementById('liquid');
@@ -264,6 +266,8 @@ const beansControl = document.getElementById('beans-control');
 
 const coolBtn = document.getElementById('cool-btn');
 const coolTimer = document.getElementById('cool-timer');
+const doubleBtn = document.getElementById('double-btn');
+const doubleControl = document.getElementById('double-control');
 
 // Modal elements
 const recipeModal = document.getElementById('recipe-modal');
@@ -384,6 +388,14 @@ function setupEventListeners() {
         });
     });
 
+    // Double shot button (espresso only)
+    doubleBtn.addEventListener('click', function() {
+        currentSettings.waterAmount = Math.min(80, currentSettings.waterAmount * 2);
+        currentSettings.beansAmount = Math.min(40, currentSettings.beansAmount * 2);
+        waterValue.textContent = currentSettings.waterAmount;
+        beansValue.textContent = currentSettings.beansAmount;
+    });
+
     // Recipe book modal
     bookBtn.addEventListener('click', () => recipeModal.classList.add('open'));
     closeModal.addEventListener('click', () => recipeModal.classList.remove('open'));
@@ -478,6 +490,7 @@ function nextCustomer() {
     selectedDrink = null;
     suggestionPanel.style.display = 'none';
     reviewArea.style.display = 'none';
+    reviewBubble.style.display = 'none';  // Hide review bubble for new customer
     sorryBtn.style.display = 'inline-block';  // Show sorry button for new customer
     nextCustomerBtn.disabled = true;  // Can't skip - must serve or say sorry
 
@@ -508,14 +521,16 @@ function showSuggestions() {
                 .replace('{drink}', orderedDrink.name.toLowerCase());
 
             suggestionPanel.style.display = 'none';
+            customerOrderEl.textContent = response;
 
             // Furious 1-star review
             reviewCount++;
             totalRating += 1;
             ratingDisplay.textContent = (totalRating / reviewCount).toFixed(1);
 
-            // Show review in speech bubble
-            customerOrderEl.textContent = '⭐☆☆☆☆\n' + response + " LIED to me about having " + orderedDrink.name + "! NEVER going back!";
+            // Show review in separate bubble
+            customerReview.textContent = '⭐☆☆☆☆\nLIED to me about having ' + orderedDrink.name + '! NEVER going back!';
+            reviewBubble.style.display = 'block';
 
             // Reset state
             currentOrder = null;
@@ -556,14 +571,16 @@ function suggestDrink(drink) {
         const templates = reviewTemplates.suggestionRejected;
         const response = templates[Math.floor(Math.random() * templates.length)];
         suggestionPanel.style.display = 'none';
+        customerOrderEl.textContent = response;
 
         // Bad review for not having what they wanted
         reviewCount++;
         totalRating += 2;
         ratingDisplay.textContent = (totalRating / reviewCount).toFixed(1);
 
-        // Show review in speech bubble
-        customerOrderEl.textContent = '⭐⭐☆☆☆\n' + response + " They didn't have what I wanted.";
+        // Show review in separate bubble
+        customerReview.textContent = "⭐⭐☆☆☆\nThey didn't have what I wanted.";
+        reviewBubble.style.display = 'block';
 
         currentOrder = null;
         sorryBtn.style.display = 'none';  // Hide sorry button when customer leaves
@@ -609,6 +626,7 @@ function showControlsForDrink(drink) {
         extractionControl.classList.remove('hidden');
         waterControl.classList.remove('hidden');
         beansControl.classList.remove('hidden');
+        doubleControl.classList.remove('hidden');
     }
 }
 
@@ -621,6 +639,7 @@ function hideAllControls() {
     extractionControl.classList.add('hidden');
     waterControl.classList.add('hidden');
     beansControl.classList.add('hidden');
+    doubleControl.classList.add('hidden');
 }
 
 // Update cup display
@@ -703,8 +722,9 @@ function serveDrink() {
     servedCount.textContent = totalServed;
     ratingDisplay.textContent = (totalRating / reviewCount).toFixed(1);
 
-    // Show review in speech bubble
-    customerOrderEl.textContent = '⭐'.repeat(stars) + '☆'.repeat(5 - stars) + '\n' + review;
+    // Show review in separate bubble
+    customerReview.textContent = '⭐'.repeat(stars) + '☆'.repeat(5 - stars) + '\n' + review;
+    reviewBubble.style.display = 'block';
 
     // Reset
     serveBtn.disabled = true;

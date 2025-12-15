@@ -96,6 +96,12 @@ main {
     justify-content: center;
 }
 
+.speech-bubbles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .speech-bubble {
     background: #f8f4ef;
     border-radius: 15px;
@@ -106,13 +112,26 @@ main {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
-.speech-bubble::before {
+.speech-bubble:first-child::before {
     content: '';
     position: absolute;
     left: -15px;
     top: 30px;
     border: 10px solid transparent;
     border-right-color: #f8f4ef;
+}
+
+.review-bubble {
+    background: #fff9e6;
+    border: 2px solid #ffd700;
+}
+
+#customer-review {
+    font-size: 1.1rem;
+    color: #2c1810;
+    line-height: 1.5;
+    white-space: pre-line;
+    margin: 0;
 }
 
 #customer-order {
@@ -468,6 +487,23 @@ main {
     background: #8b4513;
     color: white;
     border-color: #5c2d0e;
+}
+
+.double-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.double-btn:hover {
+    background: linear-gradient(135deg, #a569bd 0%, #9b59b6 100%);
+    transform: translateY(-2px);
 }
 
 .serve-btn {

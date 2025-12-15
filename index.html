@@ -22,8 +22,13 @@
             <section class="customer-area">
                 <div class="customer" id="customer">
                     <div class="customer-avatar" id="customer-avatar">🧑</div>
-                    <div class="speech-bubble" id="speech-bubble">
-                        <p id="customer-order">Welcome to your first day! Click "Next Customer" to start.</p>
+                    <div class="speech-bubbles">
+                        <div class="speech-bubble" id="speech-bubble">
+                            <p id="customer-order">Welcome to your first day! Click "Next Customer" to start.</p>
+                        </div>
+                        <div class="speech-bubble review-bubble" id="review-bubble" style="display: none;">
+                            <p id="customer-review"></p>
+                        </div>
                     </div>
                 </div>
                 <div class="customer-actions">
@@ -170,6 +175,10 @@
                             <button class="control-btn beans-btn" data-change="-1">-1</button>
                             <button class="control-btn beans-btn" data-change="+1">+1</button>
                         </div>
+                    </div>
+
+                    <div class="control-group hidden" id="double-control">
+                        <button class="double-btn" id="double-btn">Double Shot (2x water & beans)</button>
                     </div>
                 </div>
 
